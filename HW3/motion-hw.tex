@@ -1,0 +1,142 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage[margin=1.25in]{geometry}
+
+\begin{document}
+\title{EECS 600: Computational Perception}
+\author{\Large Assignment 3: Motion Computation}
+
+\date{due: Tuesday, April 5 by midnight}
+
+\maketitle
+
+\section*{Introduction}
+
+% \section{Motion Perception}
+
+\section{The Motion Gradient Equation}
+
+\newcommand{\fdxdy}[2]{\frac{\partial #1}{\partial #2}}
+
+The motion gradient equation relates changes in intensity to changes in motion
+\begin{eqnarray*}
+\fdxdy{I}{x}\frac{dx}{dt} + 
+\fdxdy{I}{y}\frac{dy}{dt} + 
+\fdxdy{I}{t} & = & 0\\
+I_x u + I_y v + I_t & = & 0
+\end{eqnarray*}
+\begin{equation}
+\Rightarrow \quad (I_x, I_y) \cdot (u,v) = -I_t
+\end{equation}
+
+\begin{itemize}
+\item[1.] \emph{(5 points)} Define a function $g(x,y,u,v,t)$ that describes the linear motion of a 2D circular Gaussian with a standard deviation of one.  The Gaussian center is defined by $(x_0,y_0)$, and the motion by $(u,v)$.
+
+\item[2.] \emph{(5 points)} Derive the components of the motion gradient equation for this function and show that the equation is satisfied.
+
+\end{itemize}
+\pagebreak
+\section{Motion Constraint Lines}
+
+\begin{enumerate}
+
+\item \emph{(5 points)}  Create a moving Gaussian blob using the function \texttt{blobmotion}.  Use the command \texttt{help blobmotion} to learn how to use it.  You can use the function \texttt{mmplay} to display the motion signal.  Write down your choice of parameters for defining the signal.  Also explain any rationale you had behind your choice of parameters.
+
+\item \emph{(10 points)} Write a function called \texttt{mge} (motion gradient estimate) that estimates the components of the motion gradient $[I_x, I_y, I_t]$ for each pixel in the movie, for every frame.  The size of the components should be identical to that of the movie.  The form of the function should be as follows:
+\begin{verbatim}
+function [Ix,Iy,It] = mge(M,hx,hy,ht)
+%input:
+% M - the movie matrix
+% hx, hy - the width and height of each pixel
+% ht - the duration of each frame
+% output:
+% Ix, Iy, It - the estimated motion gradient components
+\end{verbatim}
+
+\item \emph{(10 points)} Write a function to plot the motion constraint line at position $(x,y,t)$
+in $(u,v)$ space.  Be sure that the constraint lines are plotted in the correct units, i.e. they should match the velocity vector \texttt{DX} in \texttt{blobmotion}.
+The function should have the following form:
+\begin{verbatim}
+function plotmcl(Ix,Iy,It,x,y,t)
+%input:
+% Ix,Iy,It - the motion gradient components
+% x,y,t - the position for which the constraint line is plotted
+\end{verbatim}
+Does the motion constrain line contain the true motion? Be sure to explain what underlies any discrepancies between the true motion and your estimate.
+
+\item \emph{(10 points)}.  Next, create a horizontally moving diamond, again using the \texttt{blobmotion} function.  Use your function \texttt{plotmcl} to plot the constraint lines at two points on the upper and lower leading edges.
+
+\end{enumerate}
+
+\pagebreak
+\section{Optical Flow}
+
+\begin{enumerate}
+
+\item \emph{(10 points)} Write down the motion constraint equations for the previous problem (the two edges of the moving diamond), and solve for the motion.  Explain the conditions under which a solution is possible.
+
+\item \emph{(20 points)} Generalize the equations in the previous problem to a system of equations in which the motion is estimated from an $r \times r$ region.  In most circumstances, the motion gradient equations will not admit an exact solution, and will be overdetermined.  Therefore, your equations should express the motion as a least squares problem of the form $Ax = b$, where $x = (u,v)^T$.  The value of $x$ for a given region is the one that minimizes the constraint error $||Ax - b||$.
+
+\item \emph{(20 points)}  Write a function called \texttt{optflow} that uses your derivation in the previous problem to estimate the optical flow at each pixel in the movie.  The least squares problem can be solved with the function \texttt{pinv}.  Your function should have the following form:
+\begin{verbatim}
+function [U,V] = optflow(M,hx,hy,ht,r)
+%inputs:
+% hx, hy - the width and height of each pixel
+% ht - the duration of each frame
+% r - the size of the region over which the motion
+%     estimate for each pixel is computed.
+%outputs:
+% U,V - the estimated horizontal and vertical motion
+%       components for each pixel in M.  These have the
+%       same size as M itself.
+\end{verbatim}
+
+\item{(5 points)} Write a function to \texttt{plotflow} to plot the optical flow.  The matlab function \texttt{quiver} is useful for this purpose.  Your function should have the form
+\begin{verbatim}
+function plotflow(M,i,U,V)
+%inputs:
+% M - the motion signal
+% i - the frame at which to plot the motion
+% U,V - the estimated horizontal and vertical motion
+%       components for each pixel in M.
+\end{verbatim}
+Test your function on the examples above and show the output.  Feel free to create your own examples.
+
+\end{enumerate}
+
+\pagebreak
+\section{Motion Test Data}
+
+In this problem you will create a motion test data set as we discussed in class.  The idea here is to first design and specify the problem you wish to solve, and then develop algorithms that perform as desired.  The challenge here is to find a boundary between trivial and non-trivial.
+
+\subsection*{What you should turn in}
+
+\begin{enumerate}
+
+\item Construct a data set of test motion signals, each with an associated solution file.  The motion signals should be defined on an $N \times N$ grid. with $T$ frames.  The signal should be represented in a 3D matrix of size $[N, N, T]$.  This can be stored in a file as a standard matlab .mat file written with the command \texttt{save}.   The solution should also be specified as a matrix and stored in a separate .mat file.  The format of the solution is problem dependent, so you should be sure to carefully specify its format.
+
+\item Describe the problem(s) your motion signals are designed to test.  The description should explain the rationale behind the choice of motion signals in the data set.  If your signals are generated within matlab, include the code and describe each of the parameters that were used to make the data set.  Include in your description images from your data set.  Also describe the format of the true motion data file.
+
+\item Write a motion algorithm that takes as input the matrix of a motion signal and returns as output the solution matrix.  We will check its performance your test set, so be sure that it functions as specified.  It should have the following form:
+\begin{quote}
+\small
+\begin{verbatim}
+function V = estMotion(M)
+% M    motion signal specified as a 3D matrix
+% V    vector or matrix describing the estimated motion
+
+\end{verbatim}
+\end{quote}
+
+\item Describe your algorithm and the approach you took to solving the problem(s) posed by your test set.  Describe cases where your algorithm succeeds and where it fails.  Provide an explanation for why your algorithm performed the way it did.
+
+\end{enumerate}
+
+
+
+
+\end{document}
+
+
+

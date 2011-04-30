@@ -1,0 +1,16 @@
+>> clear all
+>> [fileName filePath] = uigetfile()
+
+fileName =
+
+08 The Bomb Song.wav
+
+
+filePath =
+
+G:\Documents\School\Spring 2011\EECS600\
+
+>> snd = wavread([filePath fileName]);
+>> 
+
+http://www.phon.ucl.ac.uk/courses/spsci/matlab/lect9.html

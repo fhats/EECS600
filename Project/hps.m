@@ -9,28 +9,29 @@ function [ pitches ] = hps( w, Fs )
     
     pitches = [];
     
-    for i=1:segment_size/2:length(w) - segment_size,
+    for i=1:segment_size/16:length(w) - segment_size,
         
         segment = w(i:i+segment_size) .* hamming(segment_size+1);
-        segment = [segment; zeros(segment_size * 15, 1)];
+        %segment = [segment; zeros(segment_size * 15, 1)];
         
-        power_spectrum = log(abs(fft(segment)));
+        power_spec = log( abs( fft(segment, 4096) ) );
         
-        summed_ds = zeros(length(segment), 1);
-        % perform downsampling
+        d_s_sum = zeros(length(power_spec), 1);
         for n=1:harmonics,
-            d_s = downsample(segment,n);
-            summed_ds(1:length(d_s)) = summed_ds(1:length(d_s)) + d_s;
+            d_s = downsample(power_spec, n);
+            d_s_sum(1:length(d_s)) = d_s_sum(1:length(d_s)) + d_s;
+            d_s_sum = d_s_sum(1:length(d_s));
         end
         
-        summed_ds = summed_ds * 2;
-        product = exp(summed_ds);
+        prod = exp(2 * d_s_sum);
         
-        [max_val, index] = max(product);
+        frequency_range = 0:Fs/(length(power_spec)):Fs;
         
-        F = 0:Fs/(length(segment)):Fs;
+        [max_val index] = max(prod);
         
-        pitches = [pitches, F(index)];
+        detected_pitch = frequency_range(index);
+        
+        pitches = [pitches, nearest_note(detected_pitch)];
         
     end
 

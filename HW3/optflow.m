@@ -11,18 +11,21 @@ function [ U,V ] = optflow( M, hx, hy, ht, r )
                 y0 = max(1, round(j - (r/2)));
                 x1 = min(size(M,1), round(i + (r/2)));
                 y1 = min(size(M,2), round(j + (r/2)));
-                A = zeros(2, r*r)';
-                B = zeros(1, r*r)';
-                for x=x0:x1,
-                    for y=y0:y1,
-                       A(x*y,1) = Ix(x,y,t);
-                       A(x*y,2) = Iy(x,y,t);
-                       B(x*y) = It(x,y,t);
-                    end
-                end
-                A
-                B
-                x = (pinv(A) * B)';
+                
+                ix_seg = Ix(x0:x1, y0:y1, t);
+                iy_seg = Iy(x0:x1, y0:y1, t);
+                it_seg = It(x0:x1, y0:y1, t);
+                
+                size_ix = numel(ix_seg);
+                size_iy = numel(iy_seg);
+                size_it = numel(it_seg);
+                
+                A(1:size_ix, 1) = reshape(ix_seg', size_ix, 1);
+                A(1:size_iy, 2) = reshape(iy_seg', size_iy, 1);
+                B(1:size_it, 1) = reshape(it_seg', size_it, 1);
+                
+                x = (pinv(A) * B);
+
                 U(i,j,t) = x(1);
                 V(i,j,t) = x(2);
             end

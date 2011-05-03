@@ -24,7 +24,7 @@ function [ U,V ] = optflow( M, hx, hy, ht, r )
                 A(1:size_iy, 2) = reshape(iy_seg', size_iy, 1);
                 B(1:size_it, 1) = reshape(it_seg', size_it, 1);
                 
-                x = (pinv(A) * B);
+                x = (pinv(A) * -B);
 
                 U(i,j,t) = x(1);
                 V(i,j,t) = x(2);

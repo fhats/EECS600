@@ -1,6 +1,6 @@
 function [ named_note ] = pitch2named_note( pitch )
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
+%pitch2named_note
+%   Takes a pitch and returns a note name for the pitch.
 
     % constants used for this calculation
     a = 2 ^ (1/12);         % we're using an equal-tempered scale

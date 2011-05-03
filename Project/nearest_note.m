@@ -1,6 +1,8 @@
 function [ nearest_freq ] = nearest_note( fn )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%nearest_note
+%   returns the nearest note in a 12-tone equal-tempered scale that is
+%   configured to A4 = 440Hz. Useful for pitches that are close to a pitch
+%   but not right on.
     
     % constants used for this calculation
     a = 2 ^ (1/12);         % we're using an equal-tempered scale

@@ -1,12 +1,18 @@
-function [ pitches ] = hps( w, Fs , stepthru )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+function [ pitches ] = hps( w, Fs , stepthru, show_changes )
+%hps 
+%   Attempts to perform pitch detection based on the harmonic product
+%   spectrum algorithm. After the HPS is computed, pitch(es) extracted from
+%   the peaks of the spectrum and then "smoothed" in time to reduce
+%   misdetection noise. The parameter stepthru should be set to 1 to enable
+%   a walkthrough of the HPS as it steps through each window of signal to
+%   examine. show_changes, when set to 1, will only output a note when it is different from
+%   the note preceding it.
     
     % define the number of harmonics we want to consider
     harmonics = 5;
     
     segment_size = 512;
-    smoothing_factor = 50; % a note should exist this many samples in either direction to 'smooth' the signal
+    smoothing_factor = 30; % a note should exist this many samples in either direction to 'smooth' the signal
     pre_pitches = {};
     
     for i=1:segment_size/16:length(w) - segment_size,
@@ -26,12 +32,6 @@ function [ pitches ] = hps( w, Fs , stepthru )
         prod = exp(2 * d_s_sum);
         frequency_range = 0:Fs/(length(power_spec)):Fs;
         
-        %[max_val index] = max(prod);
-        %
-        %detected_pitch = frequency_range(index);
-        %
-        %pitches = [pitches, nearest_note(detected_pitch)];
-        
         max_val = max(prod);
         pks = prod > (max_val * 0.25);
         detected_pitches = [];
@@ -45,7 +45,7 @@ function [ pitches ] = hps( w, Fs , stepthru )
         pre_pitches = [pre_pitches; unique_pitches];
         
         if stepthru == 1
-            %figure(1)
+            figure(1)
             plot(prod);
             unique_pitches
             pause
@@ -91,5 +91,19 @@ function [ pitches ] = hps( w, Fs , stepthru )
         nn = [nn; nnp];
     end
     pitches = nn;
+    
+    if show_changes == 1
+        u_pitches = {};
+        last_pitch_set = [];
+        
+        for p=1:size(pitches, 1),
+            if ~isempty(setxor(last_pitch_set, pitches{p}))
+                u_pitches = [u_pitches; pitches(p)];
+                last_pitch_set = pitches{p};
+            end
+        end
+        
+        pitches = u_pitches;
+    end
 end
 

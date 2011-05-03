@@ -1,6 +1,7 @@
 function [ detected_pitches ] = ceps_pitch( w, Fs )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%cep_pitch
+%   Breaks a signal into chunks and uses the cepstrum to attempt to
+%   determine the dominant pitch in each segment.
     
     ceps_len = 200;
     % define a quefrency range we want to examine
